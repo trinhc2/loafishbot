@@ -2,8 +2,6 @@ import cv2 as cv
 import numpy as np
 import os
 
-print("Current directory:", os.getcwd())
-
 #venv is outside of this folder so this changes the working directory
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
