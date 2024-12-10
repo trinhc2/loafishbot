@@ -17,7 +17,9 @@ fishingKey = 'e'
 fishingPosX = 0
 fishingPosY = 0
 fishCaught = 0
+repairThreshold = 50
 matchingThreshold = 0.9
+idleTimer = 0
 
 
 def repairTool():
@@ -59,39 +61,49 @@ def checkStopScript():
 print("Waiting for user to begin fishing...")
 
 while (not botStarted):
+    checkStopScript()
     if keyboard.is_pressed(fishingKey):
         print("Bot started. Press Ctrl+Q to stop at any time.")
         fishingPosX, fishingPosY = pyautogui.position()
         botStarted = True
 
+try: 
+    while (botStarted):
+        checkStopScript()
+        idleTimer += 1
+        print(idleTimer)
+        if idleTimer >= 500:
+            print("Idle for too long, out of energy? Stopping script")
+            exit()
+        # get an updated image of the game
+        screenshot = wincap.getScreenshot()
+        # screenshot = np.copy(screenshot)
 
-while (botStarted):
-    checkStopScript()
-    # get an updated image of the game
-    screenshot = wincap.getScreenshot()
-    # screenshot = np.copy(screenshot)
+        result = cv.matchTemplate(
+            screenshot, partialImage, cv.TM_CCOEFF_NORMED)
+        minVal, maxMatchValue, minLoc, maxLoc = cv.minMaxLoc(result)
 
-    result = cv.matchTemplate(
-        screenshot, partialImage, cv.TM_CCOEFF_NORMED)
-    minVal, maxMatchValue, minLoc, maxLoc = cv.minMaxLoc(result)
+        # cv.imshow('Computer Vision', screenshot)
+        # print(maxVal)
+        if maxMatchValue >= matchingThreshold:
+            print("found")
+            pyautogui.press(fishingKey) #reel in fish
+            time.sleep(random.uniform(6, 7.5))
+            fishCaught += 1
+            if fishCaught >= repairThreshold:
+                repairTool()
+                pyautogui.moveTo(fishingPosX, fishingPosY, 0.5)
+                fishCaught = 0
+            print("casting")
+            pyautogui.press(fishingKey) #recast line
+            idleTimer = 0
 
-    # cv.imshow('Computer Vision', screenshot)
-    # print(maxVal)
-    if maxMatchValue >= matchingThreshold:
-        print("found")
-        pyautogui.press(fishingKey)
-        time.sleep(random.uniform(6, 7.5))
-        fishCaught += 1
-        if fishCaught >= 5:
-            repairTool()
-            pyautogui.moveTo(fishingPosX, fishingPosY, 0.5)
-            fishCaught = 0
-        pyautogui.press(fishingKey)
-
-    # press 'q' with the output window focused to exit.
-    # waits 1 ms every loop to process key presses
-'''
-    if cv.waitKey(1) == ord('q'):
-        cv.destroyAllWindows()
-        break
-'''
+        # press 'q' with the output window focused to exit.
+        # waits 1 ms every loop to process key presses
+    '''
+        if cv.waitKey(1) == ord('q'):
+            cv.destroyAllWindows()
+            break
+    '''
+except KeyboardInterrupt:
+    print("Exit by keyboard")
