@@ -1,16 +1,24 @@
 import cv2 as cv
 import numpy as np
 import os
+import sys
 import pyautogui
 import time
 import random
 import keyboard
 from windowcapture import WindowCapture
 
+if getattr(sys, 'frozen', False):  # Check if running as a bundled executable
+    app_path = sys._MEIPASS  # Get the temporary folder where PyInstaller extracts files
+else:
+    app_path = os.path.dirname(os.path.realpath(__file__))  # Use the script's directory
+
+# Load image with the correct path
+fishCaughtImage = cv.imread(os.path.join(app_path, 'src', 'caughtFish.jpg'), cv.IMREAD_UNCHANGED)
+
 # venv is outside of this folder so this changes the working directory
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 wincap = WindowCapture('LOST ARK (64-bit, DX11) v.3.1.2.1')
-fishCaughtImage = cv.imread('caughtFish.jpg', cv.IMREAD_UNCHANGED)
 # WindowCapture.listWindows()
 botStarted = False
 fishingKey = 'e'
@@ -54,20 +62,20 @@ def repairTool():
 def checkStopScript():
     if keyboard.is_pressed('ctrl+q'):  # Check for Ctrl + Q globally
         print("Stopping script...")
-        exit()
+        sys.exit()
     pass
 
 
 print("Waiting for user to begin fishing...")
 
-while (not botStarted):
-    checkStopScript()
-    if keyboard.is_pressed(fishingKey):
-        print("Bot started. Press Ctrl+Q to stop at any time.")
-        fishingPosX, fishingPosY = pyautogui.position()
-        botStarted = True
-
 try:
+    while (not botStarted):
+        checkStopScript()
+        if keyboard.is_pressed(fishingKey):
+            print("Bot started. Press Ctrl+Q to stop at any time.")
+            fishingPosX, fishingPosY = pyautogui.position()
+            botStarted = True
+
     while (botStarted):
         checkStopScript()
 
