@@ -10,7 +10,7 @@ from windowcapture import WindowCapture
 # venv is outside of this folder so this changes the working directory
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 wincap = WindowCapture('LOST ARK (64-bit, DX11) v.3.1.2.1')
-partialImage = cv.imread('partial.jpg', cv.IMREAD_UNCHANGED)
+fishCaughtImage = cv.imread('caughtFish.jpg', cv.IMREAD_UNCHANGED)
 # WindowCapture.listWindows()
 botStarted = False
 fishingKey = 'e'
@@ -67,27 +67,24 @@ while (not botStarted):
         fishingPosX, fishingPosY = pyautogui.position()
         botStarted = True
 
-try: 
+try:
     while (botStarted):
         checkStopScript()
+
         idleTimer += 1
-        print(idleTimer)
         if idleTimer >= 500:
             print("Idle for too long, out of energy? Stopping script")
             exit()
-        # get an updated image of the game
+
         screenshot = wincap.getScreenshot()
-        # screenshot = np.copy(screenshot)
 
         result = cv.matchTemplate(
-            screenshot, partialImage, cv.TM_CCOEFF_NORMED)
+            screenshot, fishCaughtImage, cv.TM_CCOEFF_NORMED)
         minVal, maxMatchValue, minLoc, maxLoc = cv.minMaxLoc(result)
 
-        # cv.imshow('Computer Vision', screenshot)
-        # print(maxVal)
         if maxMatchValue >= matchingThreshold:
             print("found")
-            pyautogui.press(fishingKey) #reel in fish
+            pyautogui.press(fishingKey)  # reel in fish
             time.sleep(random.uniform(6, 7.5))
             fishCaught += 1
             if fishCaught >= repairThreshold:
@@ -95,15 +92,8 @@ try:
                 pyautogui.moveTo(fishingPosX, fishingPosY, 0.5)
                 fishCaught = 0
             print("casting")
-            pyautogui.press(fishingKey) #recast line
+            pyautogui.press(fishingKey)  # recast line
             idleTimer = 0
 
-        # press 'q' with the output window focused to exit.
-        # waits 1 ms every loop to process key presses
-    '''
-        if cv.waitKey(1) == ord('q'):
-            cv.destroyAllWindows()
-            break
-    '''
 except KeyboardInterrupt:
     print("Exit by keyboard")
